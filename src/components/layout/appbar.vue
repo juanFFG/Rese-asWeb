@@ -125,7 +125,12 @@ export default {
         title: "Login",
         to: "/login",
       },
+      {
+        title: "Registrarse",
+        to: "/register",
+      },
     ],
+    btnItems: [],
   }),
 };
 </script>
