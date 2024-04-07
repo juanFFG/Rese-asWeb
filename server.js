@@ -7,6 +7,8 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const Product = require('./models/Producto');
+const Review = require('./models/Review');
 
 const app = express();
 
@@ -111,6 +113,70 @@ app.post('/verify', async (req, res) => {
     await user.save();
 
     res.json({ msg: 'Cuenta verificada con éxito' });
+  } catch (err) {
+    res.status(500).json({ msg: 'Error del servidor' });
+  }
+});
+
+
+// Ruta para ver reseñas de un producto
+app.get('/reviews/:productId', async (req, res) => {
+  try {
+    const reviews = await Review.find({ product: req.params.productId }).populate('user', 'username');
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ msg: 'Error del servidor' });
+  }
+});
+
+// Ruta para crear una reseña
+app.post('/reviews', async (req, res) => {
+  try {
+    const { title, content, rating, product } = req.body;
+    const user = await User.findById(req.user.id);
+
+    if (!user.isVerified) {
+      return res.status(400).json({ msg: 'Debes verificar tu cuenta para crear reseñas' });
+    }
+
+    const review = new Review({
+      title,
+      content,
+      rating,
+      product,
+      user: user.id
+    });
+
+    await review.save();
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ msg: 'Error del servidor' });
+  }
+});
+
+// Ruta para ver productos
+app.get('/products', async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ msg: 'Error del servidor' });
+  }
+});
+
+// Ruta para crear un producto
+app.post('/products', async (req, res) => {
+  try {
+    const { name, description, category, price } = req.body;
+    const product = new Product({
+      name,
+      description,
+      category,
+      price
+    });
+
+    await product.save();
+    res.json(product);
   } catch (err) {
     res.status(500).json({ msg: 'Error del servidor' });
   }
