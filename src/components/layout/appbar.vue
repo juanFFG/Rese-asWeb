@@ -111,7 +111,7 @@ export default {
       },
       {
         title: "Reseñas",
-        to: "/category",
+        to: "/reseñas",
       },
       {
         title: "Mis reseñas",
