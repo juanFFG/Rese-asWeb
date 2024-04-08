@@ -2,7 +2,7 @@
   <div>
     <div>
       <v-card to="detail">
-        <v-img
+        <!--Comentario--><v-img
             :aspect-ratio="16 / 9"
             dark
             gradient="to top, rgba(25,32,72,.7), rgba(25,32,72,.0)"
