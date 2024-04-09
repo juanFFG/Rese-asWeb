@@ -11,7 +11,18 @@ const crypto = require('crypto');
 const app = express();
 
 app.use(cors({
-  origin: ['http://192.168.56.1:3000', 'http://192.168.87.1:3000', 'http://192.168.116.1:3000', 'http://192.168.142.1:3000', 'http://localhost:3000/register']
+  origin: function(origin, callback){
+    // Permitir solicitudes sin 'origin' (como las de las aplicaciones móviles)
+    if(!origin) return callback(null, true);
+    
+    if(allowedOrigins.indexOf(origin) === -1){
+      const msg = 'La política de CORS para este sitio no permite el acceso desde el origen especificado.';
+      return callback(new Error(msg), false);
+    }
+    
+    return callback(null, true);
+  },
+  credentials: true
 }));
 
 app.use(express.json());
@@ -116,6 +127,26 @@ app.post('/verify', async (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log('El servidor está escuchando en todas las direcciones IP en el puerto 3000');
+//Inicio de sesión
+app.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    // Verificar si las credenciales coinciden con los datos estáticos
+    if (email !== 'prueba@gmail.com' || password !== '123456') {
+      return res.status(400).json({ msg: 'Correo o contraseña incorrectos' });
+    }
+
+    // Si las credenciales son válidas, enviar un mensaje de éxito
+    res.status(200).json({ msg: 'Inicio de sesión exitoso' });
+
+    res.redirect('/categories');
+
+  } catch(err) {
+    res.status(500).json({ msg: 'Error del servidor' });
+  }
+});
+
+app.listen(3002, '0.0.0.0', () => {
+  console.log('El servidor está escuchando en todas las direcciones IP en el puerto 3002');
 });

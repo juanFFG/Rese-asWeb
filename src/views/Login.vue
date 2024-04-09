@@ -8,16 +8,16 @@
           </div>
         </v-card-title>
         <v-card-text>
-          <v-text-field
+          <v-text-field v-model="email"
               label="Email"
               outlined
           ></v-text-field>
-          <v-text-field
+          <v-text-field v-model="password"
               label="Password"
               outlined
           ></v-text-field>
           <div class="text-right">
-            <v-btn color="primary">
+            <v-btn color="primary" @click="login">
               Login
             </v-btn>
           </div>
@@ -26,3 +26,40 @@
     </v-col>
   </v-row>
 </template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  data() {
+    return {
+      email: '',
+      password: '',
+    };
+  },
+  methods: {
+    async login() {
+      try {
+        const response = await axios.post('http://192.168.56.1:3002/login', { // Eliminar el fragmento '#'
+          email: this.email,
+          password: this.password,
+        });
+        if (response.data.msg === 'Inicio de sesión exitoso') {
+          this.$router.push('/category'); // redirige al usuario a la página principal
+        } else {
+          this.errorMessage = response.data.msg; // Muestra el mensaje de error
+        }
+        console.log(response.data); // Muestra la respuesta del backend en la consola
+      } catch (error) {
+        this.errorMessage = error.response.data.msg; // Establecer mensaje de error
+      }
+    },
+  },
+};
+</script>
+
+<style scoped>
+.error-text {
+  color: red;
+}
+</style>

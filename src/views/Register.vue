@@ -55,7 +55,7 @@ export default {
   methods: {
     async register() {
       try {
-        const response = await axios.post('http://localhost:3000/register', {
+        const response = await axios.post('http://192.168.56.1:3000/register', {
           username: this.username,
           email: this.email,
           password: this.password,
