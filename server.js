@@ -182,6 +182,6 @@ app.post('/products', async (req, res) => {
   }
 });
 
-app.listen(3000, '0.0.0.0', () => {
-  console.log('El servidor está escuchando en todas las direcciones IP en el puerto 3000');
+app.listen(3002, '0.0.0.0', () => {
+  console.log('El servidor está escuchando en todas las direcciones IP en el puerto 3002');
 });
