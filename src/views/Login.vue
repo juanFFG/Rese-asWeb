@@ -21,6 +21,7 @@
               Login
             </v-btn>
           </div>
+          <div class="error-text">{{ errorMessage }}</div> <!-- Mostrar mensaje de error -->
         </v-card-text>
       </v-card>
     </v-col>
@@ -35,23 +36,23 @@ export default {
     return {
       email: '',
       password: '',
+      errorMessage: '', // Agrega una propiedad para el mensaje de error
     };
   },
   methods: {
     async login() {
       try {
-        const response = await axios.post('http://192.168.56.1:3002/login', { // Eliminar el fragmento '#'
+        const response = await axios.post('http://192.168.56.1:3002/login', {
           email: this.email,
           password: this.password,
         });
         if (response.data.msg === 'Inicio de sesión exitoso') {
-          this.$router.push('/category'); // redirige al usuario a la página principal
+          this.$router.push('/Home'); // redirige al usuario a la página principal
         } else {
           this.errorMessage = response.data.msg; // Muestra el mensaje de error
         }
-        console.log(response.data); // Muestra la respuesta del backend en la consola
       } catch (error) {
-        this.errorMessage = error.response.data.msg; // Establecer mensaje de error
+        this.errorMessage = error.response ? error.response.data.msg : 'Error del servidor'; // Establecer mensaje de error
       }
     },
   },

@@ -7,14 +7,14 @@ Vue.use(VueRouter)
 
 const routes = [
     {
-        path: '/',
+        path: '/Home',
         name: 'Home',
         component: Home
     },
     {
-        path: '/category',
-        name: 'Category',
-        component: () => import("@/views/Category.vue"),
+        path: '/reseñas',
+        name: 'Reseñas',
+        component: () => import("@/views/Reseñas.vue"),
     },
     {
         path: '/detail',

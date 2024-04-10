@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
@@ -7,8 +8,19 @@ const mongoose = require('mongoose');
 const User = require('./models/User');
 const nodemailer = require('nodemailer');
 const crypto = require('crypto');
+const Product = require('./models/Producto');
+const Review = require('./models/Review');
 
 const app = express();
+
+// Middleware para registrar las solicitudes
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} a ${req.url}`);
+  next();
+});
+
+const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
+console.log(allowedOrigins);
 
 app.use(cors({
   origin: function(origin, callback){
@@ -140,7 +152,7 @@ app.post('/login', async (req, res) => {
     // Si las credenciales son válidas, enviar un mensaje de éxito
     res.status(200).json({ msg: 'Inicio de sesión exitoso' });
 
-    res.redirect('/categories');
+    //res.redirect('/categories');
 
   } catch(err) {
     res.status(500).json({ msg: 'Error del servidor' });
