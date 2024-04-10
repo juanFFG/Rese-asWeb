@@ -42,6 +42,7 @@ export default {
   methods: {
     async login() {
       try {
+        //http://192.168.56.1:4001/api/users/login
         const response = await axios.post('http://192.168.56.1:3002/login', {
           email: this.email,
           password: this.password,

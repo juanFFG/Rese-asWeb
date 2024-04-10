@@ -115,7 +115,7 @@ export default {
       },
       {
         title: "Mis reseñas",
-        to: "/detail",
+        to: "/misresenas",
       },
       {
         title: "Authors",

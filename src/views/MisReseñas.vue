@@ -14,19 +14,44 @@
     </template>
 
     <template v-else>
-      <v-row>
-        <v-col cols="12" sm="6" md="4" v-for="reseña in reseñas" :key="reseña.id">
-          <v-card class="ma-3">
-            <v-card-title class="headline">{{ reseña.titulo }}</v-card-title>
-            <v-card-subtitle>{{ reseña.fecha }}</v-card-subtitle>
-            <v-card-text>{{ reseña.descripcion }}</v-card-text>
-            <v-card-actions>
-              <v-btn text color="primary" @click="editarReseña(reseña.id)">Editar</v-btn>
-              <v-btn text color="red" @click="eliminarReseña(reseña.id)">Eliminar</v-btn>
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
+      <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
+                <v-col cols="12" md="4">
+                  <v-card flat height="100%">
+                    <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
+                    <v-img
+                        :aspect-ratio="16 / 9"
+                        height="100%"
+                        :src= "review.linkImagen"
+                        
+                    ></v-img>
+                  </v-card>
+                </v-col>
+
+                <v-col>
+                  <div>
+                    <v-btn color="accent" depressed>{{ review.categoria }}</v-btn>
+                    <v-btn color="accent" depressed>Calificacion: {{ review.rating }}</v-btn>
+                    <h3 class="text-h4 font-weight-bold pt-3">
+                      {{review.product}}
+                    </h3>
+                    <h3 class="text-h4 font-weight-bold pt-3">
+                      {{review.titulo}}
+                    </h3>
+
+                    <p class="text-h6 font-weight-regular pt-3 text--secondary">
+                      {{ review.contenido }}
+                    </p>
+
+                    <div class="d-flex align-center">
+                      <v-avatar color="accent" size="36">
+                        <v-icon dark>mdi-feather</v-icon>
+                      </v-avatar>
+
+                      <div class="pl-2">{{ review.user }} · {{ review.createdAt }}</div>
+                    </div>
+                  </div>
+                </v-col>
+              </v-row>
     </template>
 
     
@@ -73,6 +98,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -85,9 +111,22 @@ export default {
       nombreElemento: '', // Nombre del elemento reseñado
       calificacion: null, // Calificación dada
       reseña: '', // Texto de la reseña
+      sesionIniciada: false,
     };
   },
   methods: {
+    mounted() {
+      axios.get('http://localhost:4001/api/users/idUserIniciado')
+        .then(response => {
+          if(response.msg !== 'No han iniciado sesión') {
+            sesionIniciada: true;
+            axios.get(`http://localhost:4001/api/resenas/mis_resenas/${response.msg}`).then(response2=>{
+              this.reseñas = response2.data;
+            });
+          }
+        }
+      );
+    }, 
     submitReview() {
       // Lógica para procesar y enviar la reseña
       console.log("Enviando reseña...");

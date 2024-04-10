@@ -38,7 +38,7 @@
                         <v-icon dark>mdi-feather</v-icon>
                       </v-avatar>
 
-                      <div class="pl-2">{{ review.user }} · {{ review.createdAt }}</div>
+                      <div class="pl-2">{{ review.userName }} · {{ review.createdAt }}</div>
                     </div>
                   </div>
                 </v-col>
