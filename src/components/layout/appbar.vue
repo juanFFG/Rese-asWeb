@@ -111,7 +111,7 @@ export default {
       },
       {
         title: "Reseñas",
-        to: "/reseñas",
+        to: "/category",
       },
       {
         title: "Mis reseñas",
@@ -126,11 +126,13 @@ export default {
         to: "/login",
       },
       {
-        title: "Registrarse",
+        title: "Register",
         to: "/register",
-      },
+      }
     ],
-    btnItems: [],
+    btnItems: [
+      // Elementos.
+    ],
   }),
 };
 </script>

@@ -1,22 +1,33 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const { check, validationResult } = require('express-validator');
-const mongoose = require('mongoose');
-const User = require('./models/User');
-const nodemailer = require('nodemailer');
-const crypto = require('crypto');
-const Product = require('./models/Producto');
-const Review = require('./models/Review');
-
+const bodyParser = require('body-parser');
 const app = express();
+const port = 3002;
+const bcrypt = require('bcrypt');
+const { Pool } = require('pg');
+const path = require('path');
+const nodemailer = require('nodemailer');
+const hbs = require('nodemailer-express-handlebars');
+const jwt = require('jsonwebtoken');
+const Joi = require('joi');
+
+
+app.use(bodyParser.json());
 
 // Middleware para registrar las solicitudes
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} a ${req.url}`);
   next();
+});
+
+// Conexión base de datos
+const pool = new Pool({
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASS,
+  port: process.env.DB_PORT,
 });
 
 const allowedOrigins = process.env.ALLOWED_ORIGINS.split(',');
@@ -37,106 +48,53 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
 
-mongoose.connect('mongodb://localhost:27017/myapp', {useNewUrlParser: true, useUnifiedTopology: true});
+const admin = {
+  username: 'admin',
+  password: 'Admin'
+};
 
-app.post('/register',
-  [
-    check('username', 'El nombre de usuario es obligatorio').not().isEmpty(),
-    check('email', 'Por favor incluye un correo electrónico válido').isEmail(),
-    check('password', 'Por favor ingresa una contraseña con 6 o más caracteres').isLength({ min: 6 })
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
-    }
-
-    const { username, email, password } = req.body;
-
-    try {
-      let user = await User.findOne({ email });
-      if (user) {
-        return res.status(400).json({ msg: 'El usuario ya existe' });
-      }
-
-      const salt = await bcrypt.genSalt(10);
-      const hashedPassword = await bcrypt.hash(password, salt);
-
-      const verificationCode = crypto.randomBytes(3).toString('hex');
-
-      user = new User({
-        username,
-        email,
-        password: hashedPassword,
-        verificationCode: verificationCode,
-        isVerified: false
-      });
-
-      await user.save();
-
-      let transporter = nodemailer.createTransport({
-        service: 'Outlook365',
-        auth: {
-          user: 'upblaureles@outlook.com',
-          pass: '231131eqwe12123'
-        }
-      });
-
-      let mailOptions = {
-        from: 'upblaureles@outlook.com',
-        to: user.email,
-        subject: 'Verificación de correo electrónico',
-        text: `Tu código de verificación es: ${verificationCode}`
-      };
-
-      transporter.sendMail(mailOptions, function(error, info){
-        if (error) {
-          console.log(error);
-        } else {
-          console.log('Correo enviado: ' + info.response);
-          res.json({ msg: 'Registro exitoso. Se ha enviado un correo electrónico de verificación.' });
-        }
-      });
-
-    } catch (err) {
-      console.error(err.message);
-      res.status(500).json({ msg: 'Error del servidor' });
-    }
+let reseñas = [
+  {
+    id: 1,
+    titulo: 'Mi primera reseña',
+    fecha: '2024-04-09',
+    descripcion: 'Esta es una reseña de prueba.'
   }
-);
+];
 
-app.post('/verify', async (req, res) => {
-  const { email, code } = req.body;
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ msg: 'Usuario no encontrado' });
+pool.query(`
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(50) UNIQUE NOT NULL,
+        password VARCHAR(100) NOT NULL,
+        institutionalmail VARCHAR(100) UNIQUE NOT NULL
+    )
+`, (err, res) => {
+    if (err) {
+        console.error(err);
+    } else {
+        console.log('Tabla users creada con éxito');
     }
+});
 
-    if (user.isVerified) {
-      return res.status(400).json({ msg: 'El usuario ya ha sido verificado' });
-    }
+app.get('/', (req, res) => {
+  res.send('Funcionamiento servidor.');
+});
 
-    if (user.verificationCode === undefined) {
-      return res.status(400).json({ msg: 'Código de verificación no definido' });
-    }
+app.get('/admin', (req, res) => {
+  res.send(admin);
+});
 
-    if (code !== user.verificationCode) {
-      return res.status(400).json({ msg: 'Código de verificación incorrecto' });
-    }
+app.get('/reseñas', (req, res) => {
+  res.send(reseñas);
+});
 
-    user.isVerified = true;
-    user.verificationCode = undefined;
-
-    await user.save();
-
-    res.json({ msg: 'Cuenta verificada con éxito' });
-  } catch (err) {
-    res.status(500).json({ msg: 'Error del servidor' });
-  }
+app.post('/reseñas', (req, res) => {
+  const nuevaReseña = req.body;
+  nuevaReseña.id = reseñas.length + 1;
+  reseñas.push(nuevaReseña);
+  res.send(nuevaReseña);
 });
 
 //Inicio de sesión
@@ -152,13 +110,11 @@ app.post('/login', async (req, res) => {
     // Si las credenciales son válidas, enviar un mensaje de éxito
     res.status(200).json({ msg: 'Inicio de sesión exitoso' });
 
-    //res.redirect('/categories');
-
   } catch(err) {
     res.status(500).json({ msg: 'Error del servidor' });
   }
 });
 
-app.listen(3002, '0.0.0.0', () => {
-  console.log('El servidor está escuchando en todas las direcciones IP en el puerto 3002');
+app.listen(port, () => {
+  console.log(`El servidor está corriendo en http://localhost:${port}`);
 });

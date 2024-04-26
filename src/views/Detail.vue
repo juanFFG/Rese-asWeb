@@ -1,6 +1,5 @@
 <template>
   <v-container fluid>
-    <!-- Validación para mostrar mensaje si no hay reseñas -->
     <template v-if="reseñas.length === 0">
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="12" class="text-center">
@@ -29,14 +28,11 @@
       </v-row>
     </template>
 
-    
-    <!-- Botón para abrir el diálogo del formulario de nueva reseña -->
     <v-btn color="primary" dark fixed bottom right class="btn-reseñar" @click="dialog = true">
       <v-icon left>mdi-pencil</v-icon>
-      Reseñar
+      Crear Reseña
     </v-btn>
 
-    <!-- Diálogo modificado para incluir el formulario de reseña -->
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
@@ -46,7 +42,6 @@
           <v-form @submit.prevent="submitReview">
             <v-select v-model="categoria" :items="categorias" label="Categoría" outlined required></v-select>
 
-            <!-- Campos adicionales que aparecen basados en la selección de categoría -->
             <template v-if="categoria === 'Película' || categoria === 'Videojuego'">
               <v-text-field v-model="genero" label="Género" outlined required></v-text-field>
             </template>
@@ -73,26 +68,51 @@
 </template>
 
 <script>
+import data from '@/data.js'
+
 export default {
   data() {
     return {
-      dialog: false, // Controla la visibilidad del diálogo de nueva reseña
-      reseñas: [], // Aquí se almacenan las reseñas
-      categorias: ['Película', 'Videojuego', 'Producto'], // Opciones para el selector de categorías
-      categoria: null, // Categoría seleccionada
-      genero: '', // Género, se muestra dependiendo de la categoría
-      precio: null, // Precio, se muestra dependiendo de la categoría
-      nombreElemento: '', // Nombre del elemento reseñado
-      calificacion: null, // Calificación dada
-      reseña: '', // Texto de la reseña
+      dialog: false,
+      reseñas: data.reseñas,
+      categorias: ['Película', 'Videojuego', 'Producto'],
+      categoria: null,
+      genero: '',
+      precio: null,
+      nombreElemento: '',
+      calificacion: null,
+      reseña: '',
+      idReseñaAEditar: null,  
     };
   },
   methods: {
     submitReview() {
-      // Lógica para procesar y enviar la reseña
-      console.log("Enviando reseña...");
-      // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
-      this.dialog = false; // Cierra el diálogo después de enviar
+      const nuevaReseña = {
+        id: this.reseñas.length + 1,
+        titulo: this.nombreElemento,
+        fecha: new Date().toISOString().substring(0, 10),
+        descripcion: this.reseña
+      };
+
+      if (this.idReseñaAEditar) {
+        const index = this.reseñas.findIndex(reseña => reseña.id === this.idReseñaAEditar);
+        this.reseñas.splice(index, 1, nuevaReseña);
+        this.idReseñaAEditar = null;
+      } else {
+        this.reseñas.push(nuevaReseña);
+      }
+
+      this.dialog = false;
+    },
+    eliminarReseña(id) {
+      this.reseñas = this.reseñas.filter(reseña => reseña.id !== id);
+    },
+    editarReseña(id) {
+      const reseñaAEditar = this.reseñas.find(reseña => reseña.id === id);
+      this.nombreElemento = reseñaAEditar.titulo;
+      this.reseña = reseñaAEditar.descripcion;
+      this.idReseñaAEditar = id;
+      this.dialog = true;
     },
   },
 };
@@ -103,25 +123,21 @@ export default {
   height: 100vh;
   display: flex;
   justify-content: center;
-  /* Centra horizontalmente */
   align-items: center;
-  /* Centra verticalmente */
 }
 
 .mensaje-sin-reseñas {
   font-size: 40px;
-  /* Ajusta el tamaño según sea necesario */
   text-align: center;
-  /* Asegura que el texto dentro del span también esté centrado */
   margin-top: 70px;
-  /* Ajusta esto para mover el texto hacia abajo */
 }
 
 .btn-reseñar {
   border-radius: 25px;
-  /* Ajusta para una forma más redondeada */
   padding: 20px 40px;
-  /* Ajusta el padding para dar más espacio alrededor del texto e ícono */
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1000;
 }
 </style>
-
