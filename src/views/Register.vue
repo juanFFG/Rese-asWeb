@@ -4,7 +4,7 @@
       <v-card class="py-6 hover-effect">
         <v-card-title class="d-flex justify-center">
           <div class="text-h4 hover-effect">
-            Login
+            Register
           </div>
         </v-card-title>
         <v-card-text>
@@ -12,7 +12,15 @@
               label="Nombre de usuario"
               outlined
               v-model="username"
-              :rules="[rules.required]"
+              :rules="[rules.required, rules.noSpecialChars]"
+              class="hover-effect"
+              style="margin-bottom: 20px"
+          ></v-text-field>
+          <v-text-field
+              label="Correo institucional"
+              outlined
+              v-model="institutionalmail"
+              :rules="[rules.required, rules.email]"
               class="hover-effect"
               style="margin-bottom: 20px"
           ></v-text-field>
@@ -26,8 +34,8 @@
               style="margin-bottom: 20px"
           ></v-text-field>
           <div class="text-right">
-            <v-btn color="primary" @click="login" class="hover-effect">
-              Login
+            <v-btn color="primary" @click="register" class="hover-effect">
+              Register
             </v-btn>
           </div>
           <transition name="slide-fade">
@@ -49,37 +57,47 @@ export default {
   data() {
     return {
       username: '',
+      institutionalmail: '',
       password: '',
       errorMessage: '',
       rules: {
         required: value => !!value || 'Este campo es requerido.',
-      },
+        email: value => /.+@.+\..+/.test(value) || 'Debe ser un correo válido.',
+        noSpecialChars: value => /^[a-zA-Z0-9]+$/.test(value) || 'No se permiten caracteres especiales.'
+      }
     };
   },
   methods: {
-    async login() {
+    async register() {
       try {
-        const response = await axios.post('http://localhost:3002/login', {
-          username: this.username,
-          password: this.password
+        const { username, institutionalmail, password } = this;
+
+        const response = await axios.post('http://localhost:3002/register', {
+          username,
+          institutionalmail,
+          password
         });
-        if (response && response.data && response.data.token) {
-          this.$root.user = response.data.user;
+
+        if (response && response.data && response.data.msg === 'Registro exitoso') {
+          // Guarda el token y el usuario en localStorage y en $root.user
           localStorage.setItem('user', JSON.stringify(response.data.user));
-          localStorage.setItem('token', response.data.token); // Guarda el token en el almacenamiento local
-
-          // Establece el token de autenticación en las cabeceras de axios
-          axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-
-          this.$router.push('/');
+          this.$root.user = response.data.user;
+          this.$router.push('/'); // Redirige al usuario a la página de inicio
+        } else if (response && response.data && response.data.msg) {
+          this.errorMessage = response.data.msg; // Muestra el mensaje de error
         } else {
-          this.errorMessage = 'Error desconocido';
+          this.errorMessage = 'Error desconocido'; // Muestra un mensaje de error genérico
         }
       } catch (error) {
-        this.errorMessage = 'Error desconocido';
+        console.error('Error al registrarse:', error);
+        if (error.response && error.response.data && error.response.data.msg) {
+          this.errorMessage = error.response.data.msg;
+        } else {
+          this.errorMessage = 'Error desconocido'; // Muestra un mensaje de error genérico
+        }
       }
     }
-  }
+  },
 };
 </script>
 

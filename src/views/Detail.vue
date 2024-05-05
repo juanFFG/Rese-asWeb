@@ -1,15 +1,9 @@
 <template>
   <v-container fluid>
     <template v-if="reseñas.length === 0">
-      <v-row justify="center" align="center" class="fill-height">
-        <v-col cols="12" class="text-center">
-          <v-icon size="56" color="grey lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
-          <div>
-            <h3 style="color: #5C6BC0;">Parece que aún no has hecho una reseña</h3>
-            <p style="color: grey;">Haz tu primera reseña para poder verla aquí.</p>
-          </div>
-        </v-col>
-      </v-row>
+      <div class="mensaje-sin-reseñas">
+        No hay reseñas para mostrar.
+      </div>
     </template>
 
     <template v-else>
@@ -36,32 +30,19 @@
     <v-dialog v-model="dialog" persistent max-width="600px">
       <v-card>
         <v-card-title>
-          <span class="headline">Nueva Reseña</span>
+          <span class="text-h5">{{ dialogTitle }}</span>
         </v-card-title>
+
         <v-card-text>
-          <v-form @submit.prevent="submitReview">
-            <v-select v-model="categoria" :items="categorias" label="Categoría" outlined required></v-select>
-
-            <template v-if="categoria === 'Película' || categoria === 'Videojuego'">
-              <v-text-field v-model="genero" label="Género" outlined required></v-text-field>
-            </template>
-            <template v-if="categoria === 'Producto' || categoria === 'Videojuego'">
-              <v-text-field v-model="precio" label="Precio (opcional)" type="number" outlined></v-text-field>
-            </template>
-
-            <v-text-field v-model="nombreElemento" label="Nombre del elemento" outlined required></v-text-field>
-
-            <v-text-field v-model="calificacion" label="Calificación general" type="number" min="1" max="5" outlined
-              required></v-text-field>
-
-            <v-textarea v-model="reseña" label="Reseña" outlined required rows="5"></v-textarea>
-            <v-card-actions>
-              <v-spacer></v-spacer>
-              <v-btn color="grey" text @click="dialog = false">Cancelar</v-btn>
-              <v-btn color="primary" dark type="submit">Enviar</v-btn>
-            </v-card-actions>
-          </v-form>
+          <v-text-field label="Título" v-model="nombreElemento" outlined></v-text-field>
+          <v-textarea label="Reseña" v-model="reseña" outlined></v-textarea>
         </v-card-text>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="dialog = false">Cerrar</v-btn>
+          <v-btn color="blue darken-1" text @click="submitReview">Guardar</v-btn>
+        </v-card-actions>
       </v-card>
     </v-dialog>
   </v-container>
@@ -85,6 +66,11 @@ export default {
       idReseñaAEditar: null,  
     };
   },
+  computed: {
+    dialogTitle() {
+      return this.idReseñaAEditar ? 'Editar Reseña' : 'Nueva Reseña';
+    },
+  },
   methods: {
     submitReview() {
       const nuevaReseña = {
@@ -104,15 +90,32 @@ export default {
 
       this.dialog = false;
     },
-    eliminarReseña(id) {
-      this.reseñas = this.reseñas.filter(reseña => reseña.id !== id);
-    },
     editarReseña(id) {
       const reseñaAEditar = this.reseñas.find(reseña => reseña.id === id);
+      //console.log('Username del usuario actual:', this.$root.user.username); // Registro para depuración
+      //console.log('Username del creador de la reseña:', reseñaAEditar.username); // Registro para depuración
+      if (this.$root.user.id != reseñaAEditar.user_id) {
+        alert('No tienes permiso para editar esta reseña');
+        return;
+      }
+
       this.nombreElemento = reseñaAEditar.titulo;
       this.reseña = reseñaAEditar.descripcion;
       this.idReseñaAEditar = id;
       this.dialog = true;
+    },
+    eliminarReseña(id) {
+      const reseñaAEliminar = this.reseñas.find(reseña => reseña.id === id);
+      //console.log('Username del usuario actual:', this.$root.user.username); // Registro para depuración
+      //console.log('Username del creador de la reseña:', reseñaAEliminar.username); // Registro para depuración
+      if (this.$root.user.id != reseñaAEliminar.user_id) {
+        alert('No tienes permiso para eliminar esta reseña');
+        return;
+      }
+
+      const index = this.reseñas.findIndex(reseña => reseña.id === id);
+      this.reseñas.splice(index, 1);
+
     },
   },
 };
