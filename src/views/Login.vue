@@ -30,6 +30,7 @@
 
 <script>
 import axios from 'axios';
+import EventBus from '../event-bus.js'
 
 export default {
   data() {
@@ -43,14 +44,16 @@ export default {
     async login() {
       try {
         //http://192.168.56.1:4001/api/users/login
-        const response = await axios.post('http://192.168.56.1:3002/login', {
+        const response = await axios.post('http://192.168.56.1:4001/api/users/login', {
           email: this.email,
           password: this.password,
         });
-        if (response.data.msg === 'Inicio de sesión exitoso') {
-          this.$router.push('/Home'); // redirige al usuario a la página principal
+        if (response && response.data) {
+          localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+          EventBus.$emit('logged-in', { sesionIniciada: true });
+          this.$router.push('/Home');
         } else {
-          this.errorMessage = response.data.msg; // Muestra el mensaje de error
+          this.errorMessage = response.data.msg;
         }
       } catch (error) {
         this.errorMessage = error.response ? error.response.data.msg : 'Error del servidor'; // Establecer mensaje de error

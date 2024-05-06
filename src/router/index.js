@@ -45,7 +45,15 @@ const routes = [
         path: '/verify',
         name: 'Verify',
         component: Verify
-    }      
+    },
+    {
+        path: '/logout',
+        name: 'logout',
+        beforeEnter(to, from, next) {
+            localStorage.removeItem('usuario');
+            next('/login');
+        }
+    }
 ]
 
 const router = new VueRouter({
