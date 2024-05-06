@@ -28,14 +28,14 @@
                       {{review.titulo}}
                     </h3>
 
-                    <p class="text-h6 font-weight-regular pt-3 text--secondary">
-                      {{ review.contenido }}
-                    </p>
+            <p class="text-h6 font-weight-regular pt-3 text--secondary">
+              {{ review.contenido }}
+            </p>
 
-                    <div class="d-flex align-center">
-                      <v-avatar color="accent" size="36">
-                        <v-icon dark>mdi-feather</v-icon>
-                      </v-avatar>
+            <div class="d-flex align-center">
+              <v-avatar color="accent" size="36">
+                <v-icon dark>mdi-feather</v-icon>
+              </v-avatar>
 
                       <div class="pl-2">{{ review.User.username }} · {{ review.createdAt }}</div>
                     </div>
