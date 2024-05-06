@@ -54,25 +54,21 @@ export default {
   },
   methods: {
     async register() {
-      try {
-        const response = await axios.post('http://192.168.56.1:3000/register', {
+      const response = await axios.post('http://localhost:4001/api/users/registrar', {
           username: this.username,
           email: this.email,
           password: this.password,
         });
-
-        if (response.data.msg === 'Registro exitoso. Se ha enviado un correo electrónico de verificación.') {
-          localStorage.setItem('email', this.email); // Almacena el correo electrónico en el almacenamiento local
-          this.$router.push('/verify'); // redirige al usuario a la página de verificación
+      try {
+        if (response.data.msg == 'Se registro') {
+          //localStorage.setItem('email', this.email); // Almacena el correo electrónico en el almacenamiento local
+          //this.$router.push('/verify'); // redirige al usuario a la página de verificación
+          this.$router.push('/login');
         } else {
           this.errorMessage = response.data.msg; // Muestra el mensaje de error
         }
       } catch (error) {
-        if (error.response && error.response.data.msg === 'El usuario ya existe') {
-          this.errorMessage = 'El correo electrónico ya está en uso. Por favor, intenta con un correo electrónico diferente.';
-        } else {
-          console.error('Error de registro:', error);
-        }
+        this.errorMessage = error;
       }
     },
   },

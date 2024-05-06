@@ -1,48 +1,48 @@
 <template>
   <v-container fluid>
     <!-- Validación para mostrar mensaje si no hay reseñas -->
-    
+
     <template v-if="sesionIniciada == true">
-      <div>
-        <h1>Mis reseñas</h1>
-        <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
-                <v-col cols="12" md="4">
-                  <v-card flat height="100%">
-                    <!--:src= "review.linkImagen"-->
-                    <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
-                    <v-img
-                        :aspect-ratio="16 / 9"
-                        height="100%"
-                        src= "https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"
-                    ></v-img>
-                  </v-card>
-                </v-col>
-                <v-col>
-                  <div>
-                    <v-btn color="accent" depressed>{{ review.Producto.categoria }}</v-btn>
-                    <v-btn color="accent" depressed>Calificacion: {{ review.rating }} ★</v-btn>
-                    <h3 class="text-h4 font-weight-bold pt-3">
-                      {{review.Producto.nombre}}
-                    </h3>
-                    <h3 class="text-h4 font-weight-bold pt-3">
-                      {{review.titulo}}
-                    </h3>
+      
+        <div>
+          <h1>Mis reseñas</h1>
+          <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
+            <v-col cols="12" md="4">
+              <v-card flat height="100%">
+                <!--:src= "review.linkImagen"-->
+                <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
+                <v-img :aspect-ratio="16 / 9" height="100%"
+                  src="https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"></v-img>
+              </v-card>
+            </v-col>
+            <v-col>
+              <div>
+                <v-btn color="accent" depressed>{{ review.Producto.categoria }}</v-btn>
+                <v-btn color="accent" depressed>Calificacion: {{ review.rating }} ★</v-btn>
+                <h3 class="text-h4 font-weight-bold pt-3">
+                  {{ review.Producto.nombre }}
+                </h3>
+                <h3 class="text-h4 font-weight-bold pt-3">
+                  {{ review.titulo }}
+                </h3>
 
-            <p class="text-h6 font-weight-regular pt-3 text--secondary">
-              {{ review.contenido }}
-            </p>
+                <p class="text-h6 font-weight-regular pt-3 text--secondary">
+                  {{ review.contenido }}
+                </p>
 
-            <div class="d-flex align-center">
-              <v-avatar color="accent" size="36">
-                <v-icon dark>mdi-feather</v-icon>
-              </v-avatar>
+                <div class="d-flex align-center">
+                  <v-avatar color="accent" size="36">
+                    <v-icon dark>mdi-feather</v-icon>
+                  </v-avatar>
 
-                      <div class="pl-2">{{ review.User.username }} · {{ review.createdAt }}</div>
-                    </div>
-                  </div>
-                </v-col>
-              </v-row>
-      </div>
+                  <div class="pl-2"> {{ review.createdAt }}</div>
+                </div>
+              </div>
+            </v-col>
+          </v-row>
+        </div>
+      
+
     </template>
     <template v-else>
       <v-row justify="center" align="center" class="fill-height">
@@ -102,7 +102,7 @@ export default {
   data() {
     return {
       dialog: false,
-      reseñas: {},
+      reseñas: [],
       categorias: ['Película', 'Videojuego', 'Producto'],
       categoria: null,
       genero: '',
@@ -116,35 +116,35 @@ export default {
       error: ''
     };
   },
-  
-    mounted() {
-      const usuarioLocal = localStorage.getItem('usuario');
-      if (usuarioLocal) {
-        this.sesionIniciada = true;
-        const usuario = JSON.parse(usuarioLocal);
-        this.userId = usuario.id;
-      } else {
-        this.sesionIniciada = false;
+
+  mounted() {
+    const usuarioLocal = localStorage.getItem('usuario');
+    if (usuarioLocal) {
+      this.sesionIniciada = true;
+      const usuario = JSON.parse(usuarioLocal);
+      this.userId = usuario.id;
+    } else {
+      this.sesionIniciada = false;
+    }
+    console.log(this.userId);
+    axios.get(`http://localhost:4001/api/resenas/mis_resenas/${this.userId}`)
+      .then(response => {
+        this.reseñas = response.data;
       }
-      console.log(this.userId);
-      axios.get(`http://localhost:4001/api/resenas/mis_resenas/${this.userId}`)
-        .then(response => {
-          this.reseñas = response.data;
-        }
-        ).catch(error => {
-          this.error = error;
+      ).catch(error => {
+        this.error = error;
       });
-    },
-    methods:{
-      submitReview() {
+  },
+  methods: {
+    submitReview() {
       // Lógica para procesar y enviar la reseña
       console.log("Enviando reseña...");
       // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
       this.dialog = false; // Cierra el diálogo después de enviar
     },
-    }
-    
-  
+  }
+
+
 };
 </script>
 
