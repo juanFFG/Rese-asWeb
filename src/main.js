@@ -1,3 +1,5 @@
+// src/main.js
+
 import Vue from 'vue'
 import App from './App.vue'
 import vuetify from './plugins/vuetify';
@@ -5,11 +7,20 @@ import router from './router'
 
 Vue.config.productionTip = false
 
+function getUserFromLocalStorage() {
+  const userString = localStorage.getItem('user');
+  try {
+    return JSON.parse(userString);
+  } catch (error) {
+    return null;
+  }
+}
+
 new Vue({
   vuetify,
   router,
   data: {
-    user: localStorage.getItem('user') && localStorage.getItem('user') !== 'undefined' ? JSON.parse(localStorage.getItem('user')) : null
+    user: getUserFromLocalStorage() // Asegúrate de que estás manejando correctamente este proceso
   },
   render: h => h(App)
 }).$mount('#app')

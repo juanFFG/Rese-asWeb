@@ -13,7 +13,7 @@
             align="center"
         >
           <v-col class="d-flex align-center justify-start">
-            <!-- ... -->
+            <!-- ... otros elementos de navegación ... -->
           </v-col>
 
           <v-col v-if="$vuetify.breakpoint.mdAndUp" class="d-flex">
@@ -119,4 +119,34 @@ export default {
 </script>
 
 <style scoped>
+.hover-effect {
+  transition: transform 0.3s ease-in-out;
+}
+
+.hover-effect:hover {
+  transform: scale(1.01);
+}
+
+.error-message {
+  color: #ff7f7f;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.v-btn:hover {
+  background-color: #f0f0f0;
+}
+
+.slide-fade-enter-active {
+  transition: all .3s ease;
+}
+.slide-fade-leave-active {
+  transition: all .8s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.slide-fade-enter, .slide-fade-leave-to
+/* .slide-fade-leave-active below version 2.1.8 */ {
+  transform: translateX(10px);
+  opacity: 0;
+}
 </style>

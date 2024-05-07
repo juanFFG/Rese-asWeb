@@ -8,42 +8,44 @@
           </div>
         </v-card-title>
         <v-card-text>
-          <v-text-field
-              label="Nombre de usuario"
-              outlined
-              v-model="username"
-              :rules="[rules.required, rules.noSpecialChars]"
-              class="hover-effect"
-              style="margin-bottom: 20px"
-          ></v-text-field>
-          <v-text-field
-              label="Correo institucional"
-              outlined
-              v-model="institutionalmail"
-              :rules="[rules.required, rules.email]"
-              class="hover-effect"
-              style="margin-bottom: 20px"
-          ></v-text-field>
-          <v-text-field
-              label="Contraseña"
-              type="password"
-              outlined
-              v-model="password"
-              :rules="[rules.required]"
-              class="hover-effect"
-              style="margin-bottom: 20px"
-          ></v-text-field>
-          <div class="text-right">
-            <v-btn color="primary" @click="register" class="hover-effect">
-              Register
-            </v-btn>
-          </div>
-          <transition name="slide-fade">
-            <div v-if="errorMessage" class="error-message">
-              <v-icon>mdi-close-circle</v-icon>
-              {{ errorMessage }}
+          <form @submit.prevent="register">
+            <v-text-field
+                label="Nombre de usuario"
+                outlined
+                v-model="username"
+                :rules="[rules.required, rules.noSpecialChars]"
+                class="hover-effect"
+                style="margin-bottom: 20px"
+            ></v-text-field>
+            <v-text-field
+                label="Correo institucional"
+                outlined
+                v-model="institutionalmail"
+                :rules="[rules.required, rules.email]"
+                class="hover-effect"
+                style="margin-bottom: 20px"
+            ></v-text-field>
+            <v-text-field
+                label="Contraseña"
+                type="password"
+                outlined
+                v-model="password"
+                :rules="[rules.required, rules.password]"
+                class="hover-effect"
+                style="margin-bottom: 20px"
+            ></v-text-field>
+            <div class="text-right">
+              <v-btn color="primary" type="submit" class="hover-effect">
+                Register
+              </v-btn>
             </div>
-          </transition>
+            <transition name="slide-fade">
+              <div v-if="errorMessage" class="error-message">
+                <v-icon>mdi-close-circle</v-icon>
+                {{ errorMessage }}
+              </div>
+            </transition>
+          </form>
         </v-card-text>
       </v-card>
     </v-col>
@@ -63,37 +65,63 @@ export default {
       rules: {
         required: value => !!value || 'Este campo es requerido.',
         email: value => /.+@.+\..+/.test(value) || 'Debe ser un correo válido.',
-        noSpecialChars: value => /^[a-zA-Z0-9]+$/.test(value) || 'No se permiten caracteres especiales.'
+        noSpecialChars: value => /^[a-zA-Z0-9]+$/.test(value) || 'No se permiten caracteres especiales.',
+        password: value => {
+          if (value.length < 8) {
+            return 'La contraseña debe tener al menos 8 caracteres.';
+          }
+          if (!/[0-9]/.test(value)) {
+            return 'La contraseña debe contener al menos un número.';
+          }
+          if (!/[a-zA-Z]/.test(value)) {
+            return 'La contraseña debe contener al menos una letra.';
+          }
+          return true;
+        },
       }
     };
   },
   methods: {
     async register() {
+      if (!this.username || !this.institutionalmail || !this.password) {
+        this.errorMessage = 'Necesitas rellenar los campos necesarios.';
+        return;
+      }
+
       try {
         const { username, institutionalmail, password } = this;
 
-        const response = await axios.post('http://localhost:3002/register', {
+        const response = await axios.post('http://localhost:3002/users/register', {
           username,
           institutionalmail,
           password
         });
 
-        if (response && response.data && response.data.msg === 'Registro exitoso') {
-          // Guarda el token y el usuario en localStorage y en $root.user
-          localStorage.setItem('user', JSON.stringify(response.data.user));
-          this.$root.user = response.data.user;
-          this.$router.push('/'); // Redirige al usuario a la página de inicio
-        } else if (response && response.data && response.data.msg) {
-          this.errorMessage = response.data.msg; // Muestra el mensaje de error
-        } else {
-          this.errorMessage = 'Error desconocido'; // Muestra un mensaje de error genérico
-        }
+        // Imprime la respuesta del servidor
+        console.log('Respuesta del servidor:', response.data);
+
+        if (response && response.data && response.data.token && response.data.newUser) {
+        this.$root.user = response.data.newUser; // Almacena el usuario en $root.user
+        localStorage.setItem('user', JSON.stringify(response.data.newUser)); // Guarda los detalles del usuario en el almacenamiento local
+        localStorage.setItem('token', response.data.token); // Guarda el token en el almacenamiento local
+        this.$router.push('/');
+      } else {
+        this.errorMessage = 'Error desconocido';
+      }
+
       } catch (error) {
-        console.error('Error al registrarse:', error);
-        if (error.response && error.response.data && error.response.data.msg) {
-          this.errorMessage = error.response.data.msg;
+        if (error.response && error.response.data && error.response.data.message) {
+          // Maneja diferentes tipos de errores de manera diferente
+          switch (error.response.data.message) {
+            case 'El nombre de usuario ya está en uso':
+              this.errorMessage = 'El nombre de usuario que has elegido ya está en uso. Por favor, elige otro.';
+              break;
+            default:
+              this.errorMessage = 'Ocurrió un error al intentar registrarte. Por favor, inténtalo de nuevo más tarde.';
+              break;
+          }
         } else {
-          this.errorMessage = 'Error desconocido'; // Muestra un mensaje de error genérico
+          this.errorMessage = 'Error desconocido';
         }
       }
     }

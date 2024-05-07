@@ -8,34 +8,36 @@
           </div>
         </v-card-title>
         <v-card-text>
-          <v-text-field
-              label="Nombre de usuario"
-              outlined
-              v-model="username"
-              :rules="[rules.required]"
-              class="hover-effect"
-              style="margin-bottom: 20px"
-          ></v-text-field>
-          <v-text-field
-              label="Contraseña"
-              type="password"
-              outlined
-              v-model="password"
-              :rules="[rules.required]"
-              class="hover-effect"
-              style="margin-bottom: 20px"
-          ></v-text-field>
-          <div class="text-right">
-            <v-btn color="primary" @click="login" class="hover-effect">
-              Login
-            </v-btn>
-          </div>
-          <transition name="slide-fade">
-            <div v-if="errorMessage" class="error-message">
-              <v-icon>mdi-close-circle</v-icon>
-              {{ errorMessage }}
+          <form @submit.prevent="login">
+            <v-text-field
+                label="Nombre de usuario"
+                outlined
+                v-model="username"
+                :rules="[rules.required]"
+                class="hover-effect"
+                style="margin-bottom: 20px"
+            ></v-text-field>
+            <v-text-field
+                label="Contraseña"
+                type="password"
+                outlined
+                v-model="password"
+                :rules="[rules.required]"
+                class="hover-effect"
+                style="margin-bottom: 20px"
+            ></v-text-field>
+            <div class="text-right">
+              <v-btn color="primary" type="submit" class="hover-effect">
+                Login
+              </v-btn>
             </div>
-          </transition>
+            <transition name="slide-fade">
+              <div v-if="errorMessage" class="error-message">
+                <v-icon>mdi-close-circle</v-icon>
+                {{ errorMessage }}
+              </div>
+            </transition>
+          </form>
         </v-card-text>
       </v-card>
     </v-col>
@@ -58,30 +60,48 @@ export default {
   },
   methods: {
     async login() {
+      if (!this.username || !this.password) {
+        this.errorMessage = 'Necesitas rellenar los campos necesarios';
+        return;
+      }
+
       try {
-        const response = await axios.post('http://localhost:3002/login', {
+        const response = await axios.post('http://localhost:3002/users/login', {
           username: this.username,
           password: this.password
         });
-        if (response && response.data && response.data.token) {
-          this.$root.user = response.data.user;
-          localStorage.setItem('user', JSON.stringify(response.data.user));
+        if (response && response.data && response.data.token && response.data.user) {
+          this.$root.user = response.data.user; // Almacena el usuario en $root.user
+          localStorage.setItem('user', JSON.stringify(response.data.user)); // Guarda los detalles del usuario en el almacenamiento local
           localStorage.setItem('token', response.data.token); // Guarda el token en el almacenamiento local
-
-          // Establece el token de autenticación en las cabeceras de axios
+          localStorage.setItem('user_id', response.data.user.id); // Guarda el ID del usuario en el almacenamiento local
+          localStorage.setItem('username', response.data.user.username); // Guarda el nombre de usuario en el almacenamiento local
           axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-
           this.$router.push('/');
         } else {
           this.errorMessage = 'Error desconocido';
         }
       } catch (error) {
-        this.errorMessage = 'Error desconocido';
+        if (error.response && error.response.data && error.response.data.message) {
+          // Maneja diferentes tipos de errores de manera diferente
+          switch (error.response.data.message) {
+            case 'Usuario o contraseña incorrecta':
+              this.errorMessage = 'El nombre de usuario o la contraseña que ingresaste son incorrectos. Por favor, inténtalo de nuevo.';
+              break;
+            default:
+              this.errorMessage = 'Ocurrió un error al intentar iniciar sesión. Por favor, inténtalo de nuevo más tarde.';
+              break;
+          }
+        } else {
+          this.errorMessage = 'Error desconocido';
+        }
       }
     }
   }
 };
 </script>
+
+
 
 <style scoped>
 .hover-effect {

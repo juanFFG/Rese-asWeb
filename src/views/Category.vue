@@ -36,7 +36,7 @@
                         style="border-radius: 16px"
                       >
                         <v-card-text>
-                          <v-btn color="accent">ANIMAL</v-btn>
+                          <v-btn color="accent">{{ reseña.categoria }}</v-btn>
                         </v-card-text>
                       </v-img>
 
@@ -76,7 +76,7 @@
 </template>
 
 <script>
-import data from '@/data.js'
+import axios from 'axios';
 
 export default {
   name: "Category",
@@ -85,8 +85,16 @@ export default {
   },
   data() {
     return {
-      reseñas: data.reseñas,
+      reseñas: [],
     };
+  },
+  async created() {
+    try {
+      const response = await axios.get('http://localhost:3002/reviews');
+      this.reseñas = response.data;
+    } catch (error) {
+      console.error(error);
+    }
   },
 };
 </script>
