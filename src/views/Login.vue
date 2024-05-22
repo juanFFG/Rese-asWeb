@@ -49,8 +49,11 @@ export default {
           password: this.password,
         });
         if (response && response.data) {
+          this.$root.user = response.data.usuario;
           localStorage.setItem('usuario', JSON.stringify(response.data.usuario));
+          localStorage.setItem('token', response.data.token);
           EventBus.$emit('logged-in', { sesionIniciada: true });
+          axios.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
           this.$router.push('/Home');
         } else {
           this.errorMessage = response.data.msg;

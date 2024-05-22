@@ -18,7 +18,7 @@
           </v-btn>
           <v-menu offset-y v-if="sesionIniciada">
             <template v-slot:activator="{ on, attrs }">
-              <v-btn v-bind="attrs" v-on="on">Cerrar Sesión</v-btn>
+              <v-btn v-bind="attrs" v-on="on">{{ $root.user.username }}</v-btn>
             </template>
             <v-list>
               <v-list-item @click="logout">
@@ -57,7 +57,7 @@ export default {
     return {
       drawer: null,
       sesionIniciada: false,
-
+      username: "",
       btnItems: [],
     }
 
@@ -81,10 +81,6 @@ export default {
           {
             title: "Authors",
             to: "/authors",
-          },
-          {
-            title: 'Mi perfil',
-            to: '/perfil',
           },
 
         ];
@@ -126,7 +122,10 @@ export default {
   methods: {
     logout() {
       try {
+        this.$root.user = null;
         localStorage.removeItem('usuario');
+        localStorage.removeItem('token');
+        this.$router.push('/login');
         this.sesionIniciada = false;
       } catch (error) {
         console.error('Error al cerrar la sesión:', error);

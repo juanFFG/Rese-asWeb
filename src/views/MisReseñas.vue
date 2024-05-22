@@ -79,7 +79,7 @@
             </template>
 
             <v-text-field v-model="nombreElemento" label="Nombre del elemento" outlined required></v-text-field>
-
+            <v-text-field v-model="titulo" label="Titulo" outlined required></v-text-field>
             <v-text-field v-model="calificacion" label="Calificación general" type="number" min="1" max="5" outlined
               required></v-text-field>
 
@@ -104,6 +104,7 @@ export default {
       dialog: false,
       reseñas: [],
       categorias: ['Película', 'Videojuego', 'Producto'],
+      titulo: '',
       categoria: null,
       genero: '',
       precio: null,
@@ -137,8 +138,16 @@ export default {
   },
   methods: {
     submitReview() {
-      // Lógica para procesar y enviar la reseña
-      console.log("Enviando reseña...");
+      const response=await axios.post('http://localhost:4001/api/resenas/crear_resena', {
+        titulo: this.titulo,
+        nombre = this.nombreElemento,
+        contenido = this.reseña,
+        categoria = this.categoria,
+        rating = this.calificacion,
+        userID: this.userId,
+      });
+      if(response.data.msg == 'Se añadio correctamente') this.$router.push('/misresenas');
+      
       // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
       this.dialog = false; // Cierra el diálogo después de enviar
     },
