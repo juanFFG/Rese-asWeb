@@ -3,45 +3,45 @@
     <!-- Validación para mostrar mensaje si no hay reseñas -->
 
     <template v-if="sesionIniciada == true">
-      
-        <div>
-          <h1>Mis reseñas</h1>
-          <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
-            <v-col cols="12" md="4">
-              <v-card flat height="100%">
-                <!--:src= "review.linkImagen"-->
-                <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
-                <v-img :aspect-ratio="16 / 9" height="100%"
-                  src="https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"></v-img>
-              </v-card>
-            </v-col>
-            <v-col>
-              <div>
-                <v-btn color="accent" depressed>{{ review.Producto.categoria }}</v-btn>
-                <v-btn color="accent" depressed>Calificacion: {{ review.rating }} ★</v-btn>
-                <h3 class="text-h4 font-weight-bold pt-3">
-                  {{ review.Producto.nombre }}
-                </h3>
-                <h3 class="text-h4 font-weight-bold pt-3">
-                  {{ review.titulo }}
-                </h3>
 
-                <p class="text-h6 font-weight-regular pt-3 text--secondary">
-                  {{ review.contenido }}
-                </p>
+      <div>
+        <h1>Mis reseñas</h1>
+        <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
+          <v-col cols="12" md="4">
+            <v-card flat height="100%">
+              <!--:src= "review.linkImagen"-->
+              <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
+              <v-img :aspect-ratio="16 / 9" height="100%"
+                src="https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"></v-img>
+            </v-card>
+          </v-col>
+          <v-col>
+            <div>
+              <v-btn color="accent" depressed>{{ review.Producto.categoria }}</v-btn>
+              <v-btn color="accent" depressed>Calificacion: {{ review.rating }} ★</v-btn>
+              <h3 class="text-h4 font-weight-bold pt-3">
+                {{ review.Producto.nombre }}
+              </h3>
+              <h3 class="text-h4 font-weight-bold pt-3">
+                {{ review.titulo }}
+              </h3>
 
-                <div class="d-flex align-center">
-                  <v-avatar color="accent" size="36">
-                    <v-icon dark>mdi-feather</v-icon>
-                  </v-avatar>
+              <p class="text-h6 font-weight-regular pt-3 text--secondary">
+                {{ review.contenido }}
+              </p>
 
-                  <div class="pl-2"> {{ review.createdAt }}</div>
-                </div>
+              <div class="d-flex align-center">
+                <v-avatar color="accent" size="36">
+                  <v-icon dark>mdi-feather</v-icon>
+                </v-avatar>
+
+                <div class="pl-2"> {{ review.createdAt }}</div>
               </div>
-            </v-col>
-          </v-row>
-        </div>
-      
+            </div>
+          </v-col>
+        </v-row>
+      </div>
+
 
     </template>
     <template v-else>
@@ -107,9 +107,9 @@ export default {
       titulo: '',
       categoria: null,
       genero: '',
-      precio: null,
+      precio: 0,
       nombreElemento: '',
-      calificacion: null,
+      calificacion: 0,
       reseña: '',
       sesionIniciada: false,
       userId: '',
@@ -118,7 +118,7 @@ export default {
     };
   },
 
-  mounted() {
+  created() {
     const usuarioLocal = localStorage.getItem('usuario');
     if (usuarioLocal) {
       this.sesionIniciada = true;
@@ -137,23 +137,28 @@ export default {
       });
   },
   methods: {
-    submitReview() {
-      const response=await axios.post('http://localhost:4001/api/resenas/crear_resena', {
+    async submitReview() {
+      const usuarioLocal = localStorage.getItem('usuario');
+      if (usuarioLocal) {
+        this.sesionIniciada = true;
+        const usuario = JSON.parse(usuarioLocal);
+        this.userId = usuario.id;
+      }
+      const response = await axios.post('http://localhost:4001/api/resenas/crear_resena', {
         titulo: this.titulo,
-        nombre = this.nombreElemento,
-        contenido = this.reseña,
-        categoria = this.categoria,
-        rating = this.calificacion,
-        userID: this.userId,
+        nombre: this.nombreElemento,
+        contenido: this.reseña,
+        categoria: this.categoria,
+        rating: this.calificacion,
+        usuarioID: this.userId,
+        precio: this.precio
       });
-      if(response.data.msg == 'Se añadio correctamente') this.$router.push('/misresenas');
-      
+      if (response.data.msg == 'Se añadio correctamente') this.$router.push('/misresenas');
+      else this.error = response.data.msg;
       // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
       this.dialog = false; // Cierra el diálogo después de enviar
     },
   }
-
-
 };
 </script>
 
