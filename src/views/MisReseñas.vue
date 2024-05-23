@@ -1,50 +1,69 @@
 <template>
   <v-container fluid>
-    <!-- Validación para mostrar mensaje si no hay reseñas -->
+    <h1 :style="{ margin: '30px' }" align="center">Mis reseñas</h1>
+    <div v-if="sesionIniciada == true">
+      <div v-if="reseñas.lenght != 0">
+        <v-expansion-panels>
+          <v-expansion-panel v-for="(categoria, index) in reseñas.data" :key="index" class="py-4"
+            style="margin-bottom: 16px">
+            <v-expansion-panel-header>
+              <h1 :style="{ marginBottom: '16px' }">{{ categoria.categoria }}</h1>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row>
+                <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4">
+                  <div v-if="review.estado == true">
+                    <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
+                      <div>
+                        <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
 
-    <template v-if="sesionIniciada == true">
+                          <v-card-text>
+                            <v-card-text>
+                              <v-btn color="accent">Calificación: {{ review.rating }} ★</v-btn>
+                            </v-card-text>
+                            <div class="text-h5 font-weight-bold primary--text">
+                              {{ review.Producto.nombre }}
+                            </div>
+                            <div class="text-h5 font-weight-bold primary--text">
+                              {{ review.titulo }}
+                            </div>
+                            <div class="text-body-1 py-4">
+                              {{ review.contenido }}
+                            </div>
 
-      <div>
-        <h1>Mis reseñas</h1>
-        <v-row v-for="(review, index) in reseñas.data" :key="index" class="py-4">
-          <v-col cols="12" md="4">
-            <v-card flat height="100%">
-              <!--:src= "review.linkImagen"-->
-              <!--"https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"-->
-              <v-img :aspect-ratio="16 / 9" height="100%"
-                src="https://cdn.pixabay.com/photo/2021/01/27/06/54/nova-scotia-duck-tolling-retriever-5953883_1280.jpg"></v-img>
-            </v-card>
-          </v-col>
-          <v-col>
-            <div>
-              <v-btn color="accent" depressed>{{ review.Producto.categoria }}</v-btn>
-              <v-btn color="accent" depressed>Calificacion: {{ review.rating }} ★</v-btn>
-              <h3 class="text-h4 font-weight-bold pt-3">
-                {{ review.Producto.nombre }}
-              </h3>
-              <h3 class="text-h4 font-weight-bold pt-3">
-                {{ review.titulo }}
-              </h3>
+                            <div class="d-flex align-center">
+                              <v-avatar color="accent" size="36">
+                                <v-icon dark>mdi-feather</v-icon>
+                              </v-avatar>
 
-              <p class="text-h6 font-weight-regular pt-3 text--secondary">
-                {{ review.contenido }}
-              </p>
+                              <div class="pl-2">{{ review.createdAt }}</div>
+                            </div>
+                          </v-card-text>
+                          <center>
+                            <v-btn text color="primary" :style="{ margin: '1px', marginBottom: '10px' }">Editar</v-btn>
+                            <v-btn text color="red" @click="deleteReview(review.id)" :style="{ margin: '1px' } ">Eliminar</v-btn>
+                            <v-btn text color="primary" :style="{ margin: '1px' }">Comentarios</v-btn>
+                          </center>
+                        </v-card>
+                      </div>
+                    </v-hover>
+                  </div>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-content>
 
-              <div class="d-flex align-center">
-                <v-avatar color="accent" size="36">
-                  <v-icon dark>mdi-feather</v-icon>
-                </v-avatar>
-
-                <div class="pl-2"> {{ review.createdAt }}</div>
-              </div>
-            </div>
-          </v-col>
-        </v-row>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </div>
 
+      <!-- Botón para abrir el diálogo del formulario de nueva reseña -->
+      <v-btn color="primary" dark fixed bottom right class="btn-reseñar" @click="dialog = true">
+        <v-icon left>mdi-pencil</v-icon>
+        Reseñar
+      </v-btn>
 
-    </template>
-    <template v-else>
+    </div>
+    <div v-else>
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="12" class="text-center">
           <v-icon size="56" color="grey lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
@@ -53,12 +72,7 @@
           </div>
         </v-col>
       </v-row>
-    </template>
-    <!-- Botón para abrir el diálogo del formulario de nueva reseña -->
-    <v-btn color="primary" dark fixed bottom right class="btn-reseñar" @click="dialog = true">
-      <v-icon left>mdi-pencil</v-icon>
-      Reseñar
-    </v-btn>
+    </div>
 
     <!-- Diálogo modificado para incluir el formulario de reseña -->
     <v-dialog v-model="dialog" persistent max-width="600px">
@@ -118,25 +132,27 @@ export default {
     };
   },
 
-  created() {
-    const usuarioLocal = localStorage.getItem('usuario');
-    if (usuarioLocal) {
-      this.sesionIniciada = true;
-      const usuario = JSON.parse(usuarioLocal);
-      this.userId = usuario.id;
-    } else {
-      this.sesionIniciada = false;
-    }
-    console.log(this.userId);
-    axios.get(`http://localhost:4001/api/resenas/mis_resenas/${this.userId}`)
-      .then(response => {
-        this.reseñas = response.data;
-      }
-      ).catch(error => {
-        this.error = error;
-      });
+  async mounted() {
+    await this.traerReseñas();
   },
   methods: {
+    async traerReseñas() {
+      const usuarioLocal = localStorage.getItem('usuario');
+      if (usuarioLocal) {
+        this.sesionIniciada = true;
+        const usuario = JSON.parse(usuarioLocal);
+        this.userId = usuario.id;
+        axios.get(`http://localhost:4001/api/resenas/mis_resenas/${this.userId}`)
+          .then(response => {
+            this.reseñas = response.data;
+          }
+          ).catch(error => {
+            this.error = error;
+          });
+      } else {
+        this.sesionIniciada = false;
+      }
+    },
     async submitReview() {
       const usuarioLocal = localStorage.getItem('usuario');
       if (usuarioLocal) {
@@ -157,7 +173,17 @@ export default {
       else this.error = response.data.msg;
       // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
       this.dialog = false; // Cierra el diálogo después de enviar
+      this.traerReseñas();
     },
+    async deleteReview(id) {
+      const token = localStorage.getItem('token'); // Aquí obtienes el token
+      await axios.delete('http://localhost:4001/api/resenas/eliminar/' + id, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      this.traerReseñas();
+    }
   }
 };
 </script>
