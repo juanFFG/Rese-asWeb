@@ -43,12 +43,12 @@
         <v-expansion-panel v-for="(categoria, index) in reviews.data" :key="index" class="py-4"
           style="margin-bottom: 16px">
           <v-expansion-panel-header>
-            <h1 :style="{ marginBottom: '16px' }">{{ categoria.categoria }}</h1>
+            <h1 :style="{ marginBottom: '16px' }">{{ categoria.categoria }}s</h1>
           </v-expansion-panel-header>
           <v-expansion-panel-content>
             <v-row>
-              <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4">
-                <div v-if="review.estado == true">
+              <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" 
+                    lg="4" v-if="review.estado == true">
                   <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
                     <div>
                       <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
@@ -71,7 +71,6 @@
                           <div class="text-body-1 py-4">
                             {{ review.contenido }}
                           </div>
-
                           <div class="d-flex align-center">
                             <v-avatar color="accent" size="36">
                               <v-icon dark>mdi-feather</v-icon>
@@ -84,7 +83,6 @@
                       </v-card>
                     </div>
                   </v-hover>
-                </div>
               </v-col>
             </v-row>
           </v-expansion-panel-content>
@@ -113,16 +111,18 @@ export default {
     };
   },
   mounted() {
-    axios.get('http://localhost:4001/api/resenas/resenas')
+    this.traerReseñas()
+  },
+  methods: {
+    traerReseñas(){
+      axios.get('http://localhost:4001/api/resenas/resenas')
       .then(response => {
         this.reviews = response.data;
       })
       .catch(error => {
         console.error('Error al obtener la información:', error);
       });
-  },
-  methods: {
-
+    }
   }
 };
 

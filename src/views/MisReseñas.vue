@@ -5,14 +5,14 @@
       <div v-if="reseñas.lenght != 0">
         <v-expansion-panels>
           <v-expansion-panel v-for="(categoria, index) in reseñas.data" :key="index" class="py-4"
-            style="margin-bottom: 16px">
+            style="margin-bottom: 16px" >
             <v-expansion-panel-header>
               <h1 :style="{ marginBottom: '16px' }">{{ categoria.categoria }}</h1>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
               <v-row>
-                <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4">
-                  <div v-if="review.estado == true">
+                <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4" v-if="review.estado == true">
+                  
                     <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
                       <div>
                         <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
@@ -40,14 +40,16 @@
                             </div>
                           </v-card-text>
                           <center>
-                            <v-btn text color="primary" :style="{ margin: '1px', marginBottom: '10px' }">Editar</v-btn>
-                            <v-btn text color="red" @click="deleteReview(review.id)" :style="{ margin: '1px' } ">Eliminar</v-btn>
+                            <v-btn text color="primary" @click="mostrarReseña(review.id)"
+                              :style="{ margin: '1px', marginBottom: '10px' }">Editar</v-btn>
+                            <v-btn text color="red" @click="deleteReview(review.id)"
+                              :style="{ margin: '1px' }">Eliminar</v-btn>
                             <v-btn text color="primary" :style="{ margin: '1px' }">Comentarios</v-btn>
                           </center>
                         </v-card>
                       </div>
                     </v-hover>
-                  </div>
+                  
                 </v-col>
               </v-row>
             </v-expansion-panel-content>
@@ -66,7 +68,7 @@
     <div v-else>
       <v-row justify="center" align="center" class="fill-height">
         <v-col cols="12" class="text-center">
-          <v-icon size="56" color="grey lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
+          <v-icon size="56" color="black lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
           <div>
             <h3 style="color: #5C6BC0;">Tienes que iniciar sesión primero para realizar tu primera reseña</h3>
           </div>
@@ -85,9 +87,7 @@
             <v-select v-model="categoria" :items="categorias" label="Categoría" outlined required></v-select>
 
             <!-- Campos adicionales que aparecen basados en la selección de categoría -->
-            <template v-if="categoria === 'Película' || categoria === 'Videojuego'">
-              <v-text-field v-model="genero" label="Género" outlined required></v-text-field>
-            </template>
+
             <template v-if="categoria === 'Producto' || categoria === 'Videojuego'">
               <v-text-field v-model="precio" label="Precio (opcional)" type="number" outlined></v-text-field>
             </template>
@@ -101,7 +101,8 @@
             <v-card-actions>
               <v-spacer></v-spacer>
               <v-btn color="grey" text @click="dialog = false">Cancelar</v-btn>
-              <v-btn color="primary" dark type="submit">Enviar</v-btn>
+              <v-btn v-if="añadir" color="primary" dark type="submit">Enviar</v-btn>
+              <v-btn v-if="!añadir" @click="editarReseña(idReseñaAEditar)" color="primary" dark>Actualizar</v-btn>
             </v-card-actions>
           </v-form>
         </v-card-text>
@@ -117,7 +118,7 @@ export default {
     return {
       dialog: false,
       reseñas: [],
-      categorias: ['Película', 'Videojuego', 'Producto'],
+      categorias: ['Película', 'Videojuego', 'Producto', 'Servicio'],
       titulo: '',
       categoria: null,
       genero: '',
@@ -128,7 +129,9 @@ export default {
       sesionIniciada: false,
       userId: '',
       prueba: localStorage.getItem('usuario'),
-      error: ''
+      error: '',
+      idReseñaAEditar: 0,
+      añadir: true
     };
   },
 
@@ -183,6 +186,39 @@ export default {
         }
       });
       this.traerReseñas();
+    },
+    async mostrarReseña(id) {
+      this.añadir = false;
+      const response = await axios.get('http://localhost:4001/api/resenas/resena/' + id);
+      //const reseñaAEditar = (this.reseñas).data.reviews.find(reseña => reseña.id == id);
+      const reseñaAEditar = response.data.reseña;
+      this.nombreElemento = reseñaAEditar.Producto.nombre;
+      this.titulo = reseñaAEditar.titulo;
+      this.reseña = reseñaAEditar.contenido;
+      this.categoria = reseñaAEditar.Producto.categoria;
+      this.precio = reseñaAEditar.Producto.precio;
+      this.calificacion = reseñaAEditar.rating;
+      this.idReseñaAEditar = reseñaAEditar.id;
+      this.dialog = true;
+      this.traerReseñas();
+    },
+    async editarReseña(id) {
+      const response = await axios.put('http://localhost:4001/api/resenas/editar_resena/' + id, {
+        titulo: this.titulo,
+        contenido: this.reseña,
+        rating: this.calificacion
+      });
+      if (response.data.message == 'Reseña actualizada') {
+        this.nombreElemento = '';
+        this.titulo = '';
+        this.reseña = '';
+        this.categoria = '';
+        this.precio = '';
+        this.calificacion = 0;
+        this.idReseñaAEditar = 0;
+        this.dialog = false;
+        this.traerReseñas();
+      }
     }
   }
 };
