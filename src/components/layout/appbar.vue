@@ -78,11 +78,6 @@ export default {
             title: "Mis reseñas",
             to: "/misresenas",
           },
-          {
-            title: "Authors",
-            to: "/authors",
-          },
-
         ];
       } else {
         return [
@@ -97,10 +92,6 @@ export default {
           {
             title: "Mis reseñas",
             to: "/misresenas",
-          },
-          {
-            title: "Authors",
-            to: "/authors",
           },
           {
             title: 'Iniciar sesión',

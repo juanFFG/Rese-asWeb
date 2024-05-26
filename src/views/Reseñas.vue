@@ -79,7 +79,7 @@
                             <div class="pl-2">{{ review.User.username }} · {{ review.createdAt }}</div>
                           </div>
                         </v-card-text>
-                        <v-btn text color="primary" :style="{ margin: '16px' }">Comentarios</v-btn>
+                        <v-btn text color="primary" @click="IrAComentarios(review.id)" :style="{ margin: '16px' }">Comentarios</v-btn>
                       </v-card>
                     </div>
                   </v-hover>
@@ -122,6 +122,9 @@ export default {
       .catch(error => {
         console.error('Error al obtener la información:', error);
       });
+    },
+    IrAComentarios(id){
+      this.$router.push({ name: 'Comentarios', params: { id: id } });
     }
   }
 };
