@@ -23,11 +23,36 @@
                 <v-icon dark>mdi-feather</v-icon>
               </v-avatar>
 
-              <div class="pl-2">{{ username }} · {{ fecha }}</div>
+              <div class="pl-2">{{ nombreUsuario }} · {{ fecha }}</div>
             </div>
           </div>
         </v-col>
       </v-row>
+    </div>
+    <div>
+      <v-card class="mt-4">
+      <v-card-text>
+        <v-form @submit.prevent="añadirComentario">
+          <v-textarea
+            v-model="contenidoComentario"
+            label="Añadir un comentario"
+            auto-grow
+            rows="3"
+            outlined
+          ></v-textarea>
+          <v-text-field v-model="calificacionComentario" label="Calificación general" 
+            type="number" min="1" max="5" outlined required>
+          </v-text-field>
+          <v-btn type="submit" color="primary" class="mt-4">Enviar</v-btn>
+        </v-form>
+      </v-card-text>
+    </v-card>
+    </div>
+    <div v-if="hayComentarios">
+
+    </div>
+    <div v-else>
+      <h2>No hay comentarios</h2>
     </div>
   </div>
 
@@ -46,11 +71,17 @@ export default {
       categoria: '',
       contenido: '',
       fecha: null,
-      nombreUsuario: ''
+      nombreUsuario: '',
+      comentarios: [],
+      hayComentarios: false,
+      calificacionComentario: 0,
+      contenidoComentario: '',
+      usuarioID: 0
     }
   },
   async mounted() {
     await this.traerReseña();
+    await this.traerComentarios();
   },
   methods: {
     async traerReseña() {
@@ -63,6 +94,31 @@ export default {
       this.categoria = reseña.Producto.categoria;
       this.fecha = reseña.createdAt;
       this.nombreUsuario = reseña.User.username;
+    },
+    async traerComentarios(){
+      const response = await axios.get('http://localhost:4001/api/comentarios/comentarios/' + this.id);
+      if(response.data.data == 'No hay comentarios'){
+        this.hayComentarios = false;
+      } else {
+        this.hayComentarios = true;
+        this.comentarios = response.data;
+      }
+    },
+    async añadirComentario(){
+      const usuarioLocal = localStorage.getItem('usuario');
+      if (usuarioLocal) {
+        this.sesionIniciada = true;
+        const usuario = JSON.parse(usuarioLocal);
+        this.usuarioID = usuario.id;
+      }
+      const response = await axios.post('http://localhost:4001/api/comentarios/crear_comentario'+this.id, {
+        usuarioID: this.usuarioID,
+        contenido: this.contenidoComentario,
+        calificacion: this.calificacionComentario,
+      });
+      if (response.data.msg == 'Se añadio correctamente') {
+        this.traerComentarios();
+      }
     }
   }
 };

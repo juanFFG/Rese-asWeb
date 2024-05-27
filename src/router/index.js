@@ -27,9 +27,10 @@ const routes = [
         component: () => import("@/views/MisReseñas.vue"),
     },
     {
-        path: '/comentarios',
+        path: '/comentarios/:id',
         name: 'Comentarios',
         component: () => import("@/views/Comentarios.vue"),
+        props: true
     },
     {
         path: '/login',
