@@ -2,7 +2,7 @@
   <v-container fluid>
     <h1 :style="{ margin: '30px' }" align="center">Mis reseñas</h1>
     <div v-if="sesionIniciada == true">
-      <div v-if="reseñas.length != 0">
+      <div v-if="hayReseñas">
         <v-expansion-panels>
           <v-expansion-panel v-for="(categoria, index) in reseñas.data" :key="index" class="py-4"
             style="margin-bottom: 16px" >
@@ -27,7 +27,7 @@
                             <div class="text-h5 font-weight-bold primary--text">
                               {{ review.titulo }}
                             </div>
-                            <div class="text-body-1 py-4">
+                            <div class="text-body-1 py-4 mt-4">
                               {{ review.contenido }}
                             </div>
 
@@ -44,20 +44,19 @@
                               :style="{ margin: '1px', marginBottom: '10px' }">Editar</v-btn>
                             <v-btn text color="red" @click="deleteReview(review.id)"
                               :style="{ margin: '1px' }">Eliminar</v-btn>
-                            <v-btn text color="primary" :style="{ margin: '1px' }">Comentarios</v-btn>
+                            <v-btn text color="primary" @click="IrAComentarios(review.id)" 
+                              :style="{ margin: '1px' }">Comentarios</v-btn>
                           </center>
                         </v-card>
                       </div>
                     </v-hover>
-                  
                 </v-col>
               </v-row>
             </v-expansion-panel-content>
-
           </v-expansion-panel>
         </v-expansion-panels>
       </div>
-      <div v-else-if="reseñas.length == 0">
+      <div v-else>
         <v-row justify="center" align="center" class="fill-height">
           <v-col cols="12" class="text-center">
             <v-icon size="56" color="black lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
@@ -141,7 +140,8 @@ export default {
       prueba: localStorage.getItem('usuario'),
       error: '',
       idReseñaAEditar: 0,
-      añadir: true
+      añadir: true,
+      hayReseñas: false,
     };
   },
 
@@ -157,7 +157,13 @@ export default {
         this.userId = usuario.id;
         axios.get(`http://localhost:4001/api/resenas/mis_resenas/${this.userId}`)
           .then(response => {
-            this.reseñas = response.data;
+            if(response.data.message == 'No se encontraron reseñas.'){
+              this.hayReseñas = false;
+            } else {
+              this.hayReseñas = true;
+              this.reseñas = response.data;
+            }
+            
           }
           ).catch(error => {
             this.error = error;
@@ -229,7 +235,10 @@ export default {
         this.dialog = false;
         this.traerReseñas();
       }
-    }
+    },
+    IrAComentarios(id) {
+      this.$router.push({ name: 'Comentarios', params: { id: id } });
+    },
   }
 };
 </script>
@@ -258,5 +267,10 @@ export default {
   /* Ajusta para una forma más redondeada */
   padding: 20px 40px;
   /* Ajusta el padding para dar más espacio alrededor del texto e ícono */
+}
+
+.mt-4{
+  font-size: 16px;
+  color: black;
 }
 </style>
