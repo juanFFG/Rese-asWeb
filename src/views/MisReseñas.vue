@@ -2,7 +2,7 @@
   <v-container fluid>
     <h1 :style="{ margin: '30px' }" align="center">Mis reseñas</h1>
     <div v-if="sesionIniciada == true">
-      <div v-if="reseñas.lenght != 0">
+      <div v-if="reseñas.length != 0">
         <v-expansion-panels>
           <v-expansion-panel v-for="(categoria, index) in reseñas.data" :key="index" class="py-4"
             style="margin-bottom: 16px" >
@@ -56,6 +56,16 @@
 
           </v-expansion-panel>
         </v-expansion-panels>
+      </div>
+      <div v-else-if="reseñas.length == 0">
+        <v-row justify="center" align="center" class="fill-height">
+          <v-col cols="12" class="text-center">
+            <v-icon size="56" color="black lighten-1" class="mb-4">mdi-comment-alert-outline</v-icon>
+            <div>
+              <h3 style="color: #5C6BC0;">Aún no has realizado ninguna reseña</h3>
+            </div>
+          </v-col>
+        </v-row>
       </div>
 
       <!-- Botón para abrir el diálogo del formulario de nueva reseña -->

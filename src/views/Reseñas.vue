@@ -80,6 +80,7 @@
                           </div>
                         </v-card-text>
                         <v-btn text color="primary" @click="IrAComentarios(review.id)" :style="{ margin: '16px' }">Comentarios</v-btn>
+                        <v-btn text color="error" @click="reportarReseña(review.id)" :style="{ margin: '16px' }">Reportar</v-btn>
                       </v-card>
                     </div>
                   </v-hover>
@@ -89,6 +90,11 @@
 
         </v-expansion-panel>
       </v-expansion-panels>
+
+      <v-snackbar v-model="snackbar" :timeout="5000" :color="snackbarColor">
+      {{ snackbarMessage }}
+      <v-btn text @click="snackbar = false">Cerrar</v-btn>
+    </v-snackbar>
 
     </div>
   </div>
@@ -107,7 +113,10 @@ import axios from 'axios';
 export default {
   data() {
     return {
-      reviews: {}
+      reviews: {},
+      snackbar: false,
+      snackbarMessage: '',
+      snackbarColor: '',
     };
   },
   mounted() {
@@ -125,8 +134,22 @@ export default {
     },
     IrAComentarios(id){
       this.$router.push({ name: 'Comentarios', params: { id: id } });
+    },
+    reportarReseña(reseñaId) {
+      axios.post(`http://localhost:4001/api/resenas/reportar`, { reseñaId })
+        .then(response => {
+          this.snackbarMessage = 'Reseña reportada con éxito';
+          this.snackbarColor = 'success';
+          this.snackbar = true;
+        })
+        .catch(error => {
+          console.error('Error al reportar la reseña:', error);
+          this.snackbarMessage = 'Error al reportar la reseña';
+          this.snackbarColor = 'error';
+          this.snackbar = true;
+        });
     }
   }
-};
+  };
 
 </script>
