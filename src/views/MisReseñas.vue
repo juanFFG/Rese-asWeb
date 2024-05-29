@@ -27,7 +27,7 @@
                               {{ review.titulo }}
                             </div>
                             <div class="text-body-1 py-4 mt-4">
-                              {{ review.contenido }}
+                              {{ truncateText(review.contenido) }}
                             </div>
                             <div class="d-flex align-center">
                               <v-avatar color="accent" size="36">
@@ -101,7 +101,7 @@
             <v-text-field v-model="nombreElemento" label="Nombre del elemento" outlined required></v-text-field>
             <v-text-field v-model="titulo" label="Titulo" outlined required></v-text-field>
             <v-text-field v-model="calificacion" label="Calificación general" type="number" min="1" max="5" outlined
-              required></v-text-field>
+              required placeholder="Ingrese una calificación del 1 al 5"></v-text-field>
 
             <v-textarea v-model="reseña" label="Reseña" outlined required rows="5"></v-textarea>
             <v-card-actions>
@@ -130,7 +130,7 @@ export default {
       genero: '',
       precio: 0,
       nombreElemento: '',
-      calificacion: 0,
+      calificacion: null,
       reseña: '',
       sesionIniciada: false,
       userId: '',
@@ -190,6 +190,7 @@ export default {
       // Aquí puedes agregar la reseña a `reseñas` o enviarla a un servidor
       this.dialog = false; // Cierra el diálogo después de enviar
       this.traerReseñas();
+      this.limpiarCampos();
     },
     async deleteReview(id) {
       const token = localStorage.getItem('token'); // Aquí obtienes el token
@@ -236,6 +237,21 @@ export default {
     IrAComentarios(id) {
       this.$router.push({ name: 'Comentarios', params: { id: id } });
     },
+    truncateText(text, expanded) {
+      const limit = 100; // Límite de caracteres para mostrar
+      if (expanded) {
+        return text;
+      }
+      return text.length > limit ? text.substring(0, limit) + '...' : text;
+    },
+    limpiarCampos() {
+      this.nombreElemento = '';
+      this.titulo = '';
+      this.reseña = '';
+      this.categoria = '';
+      this.precio = '';
+      this.calificacion = null;
+    }
   }
 };
 </script>

@@ -39,7 +39,7 @@
             <v-row>
               <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4" v-if="review.estado == true">
                 <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
-                  <div>
+                  <div @click="IrAComentarios(review.id)"> 
                     <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
                       <v-card-text>
                           <v-btn color="accent">Calificación: {{ review.rating }} ★</v-btn>
@@ -52,7 +52,7 @@
                           {{ review.titulo }}
                         </div>
                         <div class="text-body-1 py-4 mt-4">
-                          {{ review.contenido }}
+                          {{ truncateText(review.contenido) }}
                         </div>
                         <div class="d-flex align-center">
                           <v-avatar color="accent" size="36">
@@ -138,6 +138,13 @@ export default {
         .catch(error => {
           console.error('Error al obtener la información filtrada:', error);
         });
+    },
+    truncateText(text, expanded) {
+      const limit = 100; // Límite de caracteres para mostrar
+      if (expanded) {
+        return text;
+      }
+      return text.length > limit ? text.substring(0, limit) + '...' : text;
     },
     IrAComentarios(id) {
       this.$router.push({ name: 'Comentarios', params: { id: id } });
