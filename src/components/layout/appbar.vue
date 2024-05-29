@@ -67,7 +67,7 @@ export default {
       if (this.sesionIniciada) {
         return [
           {
-            title: "Home",
+            title: "Inicio",
             to: "/",
           },
           {
@@ -82,7 +82,7 @@ export default {
       } else {
         return [
           {
-            title: "Home",
+            title: "Inicio",
             to: "/",
           },
           {
