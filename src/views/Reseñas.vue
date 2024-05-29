@@ -39,7 +39,7 @@
             <v-row>
               <v-col v-for="(review, index) in categoria.reviews" :key="index" class="py-4" cols="12" lg="4" v-if="review.estado == true">
                 <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
-                  <div @click="IrAComentarios(review.id)"> 
+                  <div> 
                     <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
                       <v-card-text>
                           <v-btn color="accent">Calificación: {{ review.rating }} ★</v-btn>
