@@ -16,7 +16,6 @@
                     <v-hover v-slot:default="{ hover }" close-delay="50" open-delay="50">
                       <div>
                         <v-card :color="hover ? 'white' : 'transparent'" :elevation="hover ? 12 : 0" flat hover>
-
                           <v-card-text>
                             <v-card-text>
                               <v-btn color="accent">Calificación: {{ review.rating }} ★</v-btn>
@@ -30,12 +29,10 @@
                             <div class="text-body-1 py-4 mt-4">
                               {{ review.contenido }}
                             </div>
-
                             <div class="d-flex align-center">
                               <v-avatar color="accent" size="36">
                                 <v-icon dark>mdi-feather</v-icon>
                               </v-avatar>
-
                               <div class="pl-2">{{ review.createdAt }}</div>
                             </div>
                           </v-card-text>
